@@ -14,7 +14,7 @@ Result open_extdata()
 {
 	Result ret=0;
 	u32 pos;
-	u32 extdataID_homemenu;
+	u32 extdataID_gamecoin;
 	u8 region=0;
 
 	ret = initCfgu();
@@ -37,7 +37,7 @@ Result open_extdata()
 
 	exitCfgu();
 
-	extdataID_homemenu = 0xf000000b;
+	extdataID_gamecoin = 0xf000000b;
 
 	for(pos=0; pos<TotalExtdataArchives; pos++)
 	{
@@ -47,15 +47,15 @@ Result open_extdata()
 		extdata_archives[pos].lowPath.data = (u8*)extdata_archives_lowpathdata[pos];
 
 		memset(extdata_archives_lowpathdata[pos], 0, 0xc);
-		extdata_archives_lowpathdata[pos][0] = mediatype_NAND;//mediatype, 1=SD
+		extdata_archives_lowpathdata[pos][0] = mediatype_NAND;
 	}
 
-	extdata_archives_lowpathdata[GameCoin_Extdata][1] = extdataID_homemenu;//extdataID-low
+	extdata_archives_lowpathdata[GameCoin_Extdata][1] = extdataID_gamecoin;//extdataID-low
 
 	ret = FSUSER_OpenArchive(NULL, &extdata_archives[GameCoin_Extdata]);
 	if(ret!=0)
 	{
-		printf("Failed to open homemenu extdata with extdataID=0x%08x, retval: 0x%08x\n", (unsigned int)extdataID_homemenu, (unsigned int)ret);
+		printf("Failed to open homemenu extdata with extdataID=0x%08x, retval: 0x%08x\n", (unsigned int)extdataID_gamecoin, (unsigned int)ret);
 		gfxFlushBuffers();
 		gfxSwapBuffers();
 		return ret;
