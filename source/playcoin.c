@@ -203,7 +203,7 @@ int main()
 	Result ret = 0;
 
 	// Initialize services
-	gfxInit();
+	gfxInitDefault();
 
 	consoleInit(GFX_BOTTOM, NULL);
 
