@@ -8,6 +8,7 @@
 
 typedef int (*menuent_funcptr)(void);
 
+int menu_32767coins();
 int menu_300coins();
 int menu_10coins();
 int menu_0coins();
@@ -15,14 +16,15 @@ int menu_gamecoindat2sd();
 int menu_sd2gamecoindat();
 int setcoins(u8 highByte, u8 lowByte);
 
-int mainmenu_totalentries = 5;
-char *mainmenu_entries[5] = {
+int mainmenu_totalentries = 6;
+char *mainmenu_entries[6] = {
+"Set Play Coins to 32767",
 "Set Play Coins to 300",
 "Set Play Coins to 10",
 "Set Play Coins to 0",
 "Copy gamecoin.dat from extdata to sd",
 "Copy gamecoin.dat from sd to extdata"};
-menuent_funcptr mainmenu_entryhandlers[5] = {menu_300coins, menu_10coins, menu_0coins, menu_gamecoindat2sd, menu_sd2gamecoindat};
+menuent_funcptr mainmenu_entryhandlers[5] = {menu_32767coins, menu_300coins, menu_10coins, menu_0coins, menu_gamecoindat2sd, menu_sd2gamecoindat};
 
 u8 *filebuffer;
 u32 filebuffer_maxsize = 0x400000;
@@ -77,6 +79,10 @@ int draw_menu(char **menu_entries, int total_menuentries, int x, int y)
 
 	if(!entermenu)return -2;
 	return cursor;
+}
+
+int menu_32767coins() {
+	return setcoins(0x7f, 0xff);
 }
 
 int menu_300coins()
