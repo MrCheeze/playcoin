@@ -7,7 +7,7 @@
 #include "archive.h"
 
 u32 extdata_archives_lowpathdata[TotalExtdataArchives][3];
-FS_archive extdata_archives[TotalExtdataArchives];
+FS_Archive extdata_archives[TotalExtdataArchives];
 u32 extdata_initialized = 0;
 
 Result open_extdata()
@@ -17,7 +17,7 @@ Result open_extdata()
 	u32 extdataID_gamecoin;
 	u8 region=0;
 
-	ret = initCfgu();
+	ret = cfguInit();
 	if(ret!=0)
 	{
 		printf("initCfgu() failed: 0x%08x\n", (unsigned int)ret);
@@ -35,24 +35,24 @@ Result open_extdata()
 		return ret;
 	}
 
-	exitCfgu();
+	cfguExit();
 
 	extdataID_gamecoin = 0xf000000b;
 
 	for(pos=0; pos<TotalExtdataArchives; pos++)
 	{
-		extdata_archives[pos].id = ARCH_SHARED_EXTDATA;
+		extdata_archives[pos].id = ARCHIVE_SHARED_EXTDATA;
 		extdata_archives[pos].lowPath.type = PATH_BINARY;
 		extdata_archives[pos].lowPath.size = 0xc;
 		extdata_archives[pos].lowPath.data = (u8*)extdata_archives_lowpathdata[pos];
 
 		memset(extdata_archives_lowpathdata[pos], 0, 0xc);
-		extdata_archives_lowpathdata[pos][0] = mediatype_NAND;
+		extdata_archives_lowpathdata[pos][0] = MEDIATYPE_NAND;
 	}
 
 	extdata_archives_lowpathdata[GameCoin_Extdata][1] = extdataID_gamecoin;//extdataID-low
 
-	ret = FSUSER_OpenArchive(NULL, &extdata_archives[GameCoin_Extdata]);
+	ret = FSUSER_OpenArchive(&extdata_archives[GameCoin_Extdata]);
 	if(ret!=0)
 	{
 		printf("Failed to open homemenu extdata with extdataID=0x%08x, retval: 0x%08x\n", (unsigned int)extdataID_gamecoin, (unsigned int)ret);
@@ -71,7 +71,7 @@ void close_extdata()
 
 	for(pos=0; pos<TotalExtdataArchives; pos++)
 	{
-		if(extdata_initialized & (1<<pos))FSUSER_CloseArchive(NULL, &extdata_archives[pos]);
+		if(extdata_initialized & (1<<pos))FSUSER_CloseArchive(&extdata_archives[pos]);
 	}
 }
 
@@ -96,7 +96,7 @@ Result archive_getfilesize(Archive archive, char *path, u32 *outsize)
 		return 0;
 	}
 
-	ret = FSUSER_OpenFile(NULL, &filehandle, extdata_archives[archive], FS_makePath(PATH_CHAR, path), 1, 0);
+	ret = FSUSER_OpenFile(&filehandle, extdata_archives[archive], fsMakePath(PATH_ASCII, path), 1, 0);
 	if(ret!=0)return ret;
 
 	ret = FSFILE_GetSize(filehandle, &tmp64);
@@ -133,7 +133,7 @@ Result archive_readfile(Archive archive, char *path, u8 *buffer, u32 size)
 		return 0;
 	}
 
-	ret = FSUSER_OpenFile(NULL, &filehandle, extdata_archives[archive], FS_makePath(PATH_CHAR, path), FS_OPEN_READ, 0);
+	ret = FSUSER_OpenFile(&filehandle, extdata_archives[archive], fsMakePath(PATH_ASCII, path), FS_OPEN_READ, 0);
 	if(ret!=0)return ret;
 
 	ret = FSFILE_Read(filehandle, &tmpval, 0, buffer, size);
@@ -171,7 +171,7 @@ Result archive_writefile(Archive archive, char *path, u8 *buffer, u32 size)
 		return 0;
 	}
 
-	ret = FSUSER_OpenFile(NULL, &filehandle, extdata_archives[archive], FS_makePath(PATH_CHAR, path), FS_OPEN_WRITE, 0);
+	ret = FSUSER_OpenFile(&filehandle, extdata_archives[archive], fsMakePath(PATH_ASCII, path), FS_OPEN_WRITE, 0);
 	if(ret!=0)return ret;
 
 	ret = FSFILE_Write(filehandle, &tmpval, 0, buffer, size, FS_WRITE_FLUSH);
