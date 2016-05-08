@@ -8,6 +8,8 @@
 
 u32 extdata_archives_lowpathdata[TotalExtdataArchives][3];
 FS_Archive extdata_archives[TotalExtdataArchives];
+FS_ArchiveID archiveId;
+FS_Path archivePath;
 u32 extdata_initialized = 0;
 
 Result open_extdata()
@@ -41,10 +43,10 @@ Result open_extdata()
 
 	for(pos=0; pos<TotalExtdataArchives; pos++)
 	{
-		extdata_archives[pos].id = ARCHIVE_SHARED_EXTDATA;
-		extdata_archives[pos].lowPath.type = PATH_BINARY;
-		extdata_archives[pos].lowPath.size = 0xc;
-		extdata_archives[pos].lowPath.data = (u8*)extdata_archives_lowpathdata[pos];
+		archiveId = ARCHIVE_SHARED_EXTDATA;
+		archivePath.type = PATH_BINARY;
+		archivePath.size = 0xc;
+		archivePath.data = (u8*)extdata_archives_lowpathdata[pos];
 
 		memset(extdata_archives_lowpathdata[pos], 0, 0xc);
 		extdata_archives_lowpathdata[pos][0] = MEDIATYPE_NAND;
@@ -52,7 +54,7 @@ Result open_extdata()
 
 	extdata_archives_lowpathdata[GameCoin_Extdata][1] = extdataID_gamecoin;//extdataID-low
 
-	ret = FSUSER_OpenArchive(&extdata_archives[GameCoin_Extdata]);
+	ret = FSUSER_OpenArchive(&extdata_archives[GameCoin_Extdata], archiveId, archivePath);
 	if(ret!=0)
 	{
 		printf("Failed to open homemenu extdata with extdataID=0x%08x, retval: 0x%08x\n", (unsigned int)extdataID_gamecoin, (unsigned int)ret);
@@ -71,7 +73,7 @@ void close_extdata()
 
 	for(pos=0; pos<TotalExtdataArchives; pos++)
 	{
-		if(extdata_initialized & (1<<pos))FSUSER_CloseArchive(&extdata_archives[pos]);
+		if(extdata_initialized & (1<<pos))FSUSER_CloseArchive(extdata_archives[pos]);
 	}
 }
 
