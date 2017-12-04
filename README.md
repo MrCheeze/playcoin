@@ -7,4 +7,4 @@ Usage is self-explanatory, just choose the number of coins you want from the lis
 
 Note that this code is simply a modification of yellows8's [3ds_homemenu_extdatatool](https://github.com/yellows8/3ds_homemenu_extdatatool), which contains within it code to modify arbitrary 3ds extdata.
 
-Precompiled download: https://dl.dropboxusercontent.com/u/183608682/playcoin.zip
+Precompiled download: https://www.dropbox.com/s/8ncxrv4hevssz4g/playcoin.zip?dl=0
