@@ -34,6 +34,8 @@ int draw_menu(char **menu_entries, int total_menuentries, int x, int y)
 	int update_menu = 1;
 	int entermenu = 0;
 
+	y += 1;
+	
 	while(aptMainLoop())
 	{
 		gspWaitForVBlank();
