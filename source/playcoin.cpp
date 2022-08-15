@@ -8,26 +8,34 @@
 
 typedef int (*menuent_funcptr)(void);
 
+int custom_amount();
 int menu_300coins();
 int menu_10coins();
 int menu_0coins();
 int menu_gamecoindat2sd();
 int menu_sd2gamecoindat();
-int setcoins(u8 highByte, u8 lowByte);
+int setcoins(u16 bytes);
 
-int mainmenu_totalentries = 5;
-char *mainmenu_entries[5] = {
+
+static SwkbdState swkbd;
+static char mybuf[10];
+SwkbdButton button = SWKBD_BUTTON_NONE;
+
+const char* filename = "/gamecoin.dat";
+const int mainmenu_totalentries = 6;
+const char* mainmenu_entries[mainmenu_totalentries] = {
+"Set Play Coins to custom amount",
 "Set Play Coins to 300",
 "Set Play Coins to 10",
 "Set Play Coins to 0",
 "Copy gamecoin.dat from extdata to sd",
 "Copy gamecoin.dat from sd to extdata"};
-menuent_funcptr mainmenu_entryhandlers[5] = {menu_300coins, menu_10coins, menu_0coins, menu_gamecoindat2sd, menu_sd2gamecoindat};
+menuent_funcptr mainmenu_entryhandlers[mainmenu_totalentries] = {custom_amount ,menu_300coins, menu_10coins, menu_0coins, menu_gamecoindat2sd, menu_sd2gamecoindat};
 
 u8 *filebuffer;
 u32 filebuffer_maxsize = 0x400000;
 
-int draw_menu(char **menu_entries, int total_menuentries, int x, int y)
+int draw_menu(const char **menu_entries, int total_menuentries, int x, int y)
 {
 	int i;
 	int cursor = 0;
@@ -81,19 +89,33 @@ int draw_menu(char **menu_entries, int total_menuentries, int x, int y)
 	return cursor;
 }
 
+int inputNum()
+{
+	swkbdInit(&swkbd, SWKBD_TYPE_NUMPAD, 2, 3);
+	swkbdSetPasswordMode(&swkbd, SWKBD_PASSWORD_NONE);
+	//swkbdSetValidation(&swkbd, SWKBD_ANYTHING, 0, 0);
+	swkbdSetFeatures(&swkbd, SWKBD_FIXED_WIDTH);
+	button = swkbdInputText(&swkbd, mybuf, sizeof(mybuf));
+	return atoi(mybuf);
+}
+
+int custom_amount()
+{
+	return setcoins((u16) inputNum());
+}
 int menu_300coins()
 {
-	return setcoins(0x01, 0x2C);
+	return setcoins(300);
 }
 
 int menu_10coins()
 {
-	return setcoins(0x00, 0x0A);
+	return setcoins(10);
 }
 
 int menu_0coins()
 {
-	return setcoins(0x00, 0x00);
+	return setcoins(0);
 }
 
 int menu_gamecoindat2sd()
@@ -106,7 +128,7 @@ int menu_gamecoindat2sd()
 	memset(filepath, 0, 256);
 	strncpy(filepath, "gamecoin.dat", 255);
 
-	ret = archive_copyfile(GameCoin_Extdata, SDArchive, "/gamecoin.dat", filepath, filebuffer, 0x14, filebuffer_maxsize, "gamecoin.dat");
+	ret = archive_copyfile(GameCoin_Extdata, SDArchive, (char*)"/gamecoin.dat", filepath, filebuffer, 0x14, filebuffer_maxsize, (char*)"gamecoin.dat");
 
 	if(ret==0)
 	{
@@ -128,7 +150,7 @@ int menu_sd2gamecoindat()
 	memset(filepath, 0, 256);
 	strncpy(filepath, "gamecoin.dat", 255);
 
-	ret = archive_copyfile(SDArchive, GameCoin_Extdata, filepath, "/gamecoin.dat", filebuffer, 0x14, filebuffer_maxsize, "gamecoin.dat");
+	ret = archive_copyfile(SDArchive, GameCoin_Extdata, filepath, (char*)"/gamecoin.dat", filebuffer, 0x14, filebuffer_maxsize, (char*)"gamecoin.dat");
 
 	if(ret==0)
 	{
@@ -140,7 +162,7 @@ int menu_sd2gamecoindat()
 	return 0;
 }
 
-int setcoins(u8 highByte, u8 lowByte)
+int setcoins(u16 bytes)
 {	
 	Result ret=0;
 
@@ -148,7 +170,7 @@ int setcoins(u8 highByte, u8 lowByte)
 	gfxFlushBuffers();
 	gfxSwapBuffers();
 
-	ret = archive_readfile(GameCoin_Extdata, "/gamecoin.dat", filebuffer, 0x14);
+	ret = archive_readfile(GameCoin_Extdata, (char*)"/gamecoin.dat", filebuffer, 0x14);
 	if(ret!=0)
 	{
 		printf("Failed to read file: 0x%08x\n", (unsigned int)ret);
@@ -157,14 +179,14 @@ int setcoins(u8 highByte, u8 lowByte)
 		return 0;
 	}
 
-	filebuffer[0x4]=lowByte;
-	filebuffer[0x5]=highByte;
+	filebuffer[0x4]=bytes % 256;
+	filebuffer[0x5]=bytes / 256;
 
 	printf("Writing updated gamecoin.dat...\n");
 	gfxFlushBuffers();
 	gfxSwapBuffers();
 
-	ret = archive_writefile(GameCoin_Extdata, "/gamecoin.dat", filebuffer, 0x14);
+	ret = archive_writefile(GameCoin_Extdata, (char*)"/gamecoin.dat", filebuffer, 0x14);
 	if(ret!=0)
 	{
 		printf("Failed to write file: 0x%08x\n", (unsigned int)ret);
